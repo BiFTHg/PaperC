@@ -14,10 +14,14 @@
                              level.setBlockAndUpdate(blockPos, BaseFireBlock.getState(level, blockPos));
                              return;
                          }
-@@ -103,6 +_,14 @@
+@@ -103,6 +_,18 @@
                      }
  
                      if (level.isEmptyBlock(blockPos1.above()) && this.isFlammable(level, blockPos1)) {
++                        net.craftoriya.events.FireSpreadEvent fireSpreadEvent = new net.craftoriya.events.FireSpreadEvent(org.bukkit.craftbukkit.block.data.CraftBlockData.createData(level.getBlockState(blockPos1)));
++                        org.bukkit.Bukkit.getPluginManager().callEvent(fireSpreadEvent);
++                        if (fireSpreadEvent.isCancelled()) return;
++
 +                        // CraftBukkit start - Prevent lava putting something on fire
 +                        BlockPos up = blockPos1.above();
 +                        if (level.getBlockState(up).getBlock() != Blocks.FIRE) {
@@ -29,6 +33,21 @@
                          level.setBlockAndUpdate(blockPos1.above(), BaseFireBlock.getState(level, blockPos1));
                      }
                  }
+@@ -112,7 +_,13 @@
+ 
+     private boolean hasFlammableNeighbours(LevelReader level, BlockPos pos) {
+         for (Direction direction : Direction.values()) {
+-            if (this.isFlammable(level, pos.relative(direction))) {
++            BlockPos pos1 = pos.relative(direction);
++
++            net.craftoriya.events.FireSpreadEvent fireSpreadEvent = new net.craftoriya.events.FireSpreadEvent(org.bukkit.craftbukkit.block.data.CraftBlockData.createData(level.getBlockState(pos1)));
++            org.bukkit.Bukkit.getPluginManager().callEvent(fireSpreadEvent);
++            if (fireSpreadEvent.isCancelled()) return false;
++
++            if (this.isFlammable(level, pos1)) {
+                 return true;
+             }
+         }
 @@ -195,7 +_,11 @@
              FluidState fluidState1 = level.getFluidState(pos);
              if (this.is(FluidTags.LAVA) && fluidState1.is(FluidTags.WATER)) {
