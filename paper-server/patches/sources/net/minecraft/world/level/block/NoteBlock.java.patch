@@ -1,8 +1,15 @@
 --- a/net/minecraft/world/level/block/NoteBlock.java
 +++ b/net/minecraft/world/level/block/NoteBlock.java
-@@ -70,6 +_,7 @@
+@@ -69,7 +_,14 @@
+     }
  
      @Override
++    public void randomTick(final BlockState state, final net.minecraft.server.level.ServerLevel world, final BlockPos pos, final RandomSource random) {
++        net.craftoriya.events.NoteBlockRandomTickEvent event = new net.craftoriya.events.NoteBlockRandomTickEvent(org.bukkit.craftbukkit.block.CraftBlock.at(world, pos));
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++    }
++
++    @Override
      public BlockState getStateForPlacement(BlockPlaceContext context) {
 +        if (io.papermc.paper.configuration.GlobalConfiguration.get().blockUpdates.disableNoteblockUpdates) return this.defaultBlockState(); // Paper - place without considering instrument
          return this.setInstrument(context.getLevel(), context.getClickedPos(), this.defaultBlockState());
