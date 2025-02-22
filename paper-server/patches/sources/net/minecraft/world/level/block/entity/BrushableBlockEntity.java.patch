@@ -1,5 +1,36 @@
 --- a/net/minecraft/world/level/block/entity/BrushableBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BrushableBlockEntity.java
+@@ -97,15 +_,26 @@
+                 .withParameter(LootContextParams.TOOL, stack)
+                 .create(LootContextParamSets.ARCHAEOLOGY);
+             ObjectArrayList<ItemStack> randomItems = lootTable.getRandomItems(lootParams, this.lootTableSeed);
++            ItemStack itemStack;
+ 
+-            this.item = switch (randomItems.size()) {
+-                case 0 -> ItemStack.EMPTY;
+-                case 1 -> (ItemStack)randomItems.getFirst();
++            switch (randomItems.size()) {
++                case 0 -> itemStack = ItemStack.EMPTY;
++                case 1 -> itemStack = randomItems.getFirst();
+                 default -> {
+                     LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.location(), randomItems.size());
+-                    yield randomItems.getFirst();
++                    itemStack = randomItems.getFirst();
+                 }
+             };
++
++            net.craftoriya.events.BrushableBlockLootGenerateEvent event = new net.craftoriya.events.BrushableBlockLootGenerateEvent(lootTable.craftLootTable, itemStack.asBukkitCopy());
++            org.bukkit.Bukkit.getPluginManager().callEvent(event);
++
++            if (event.isCancelled()) {
++                this.item = ItemStack.EMPTY;
++            } else {
++                this.item = ItemStack.fromBukkitCopy(event.getGeneratedItem());
++            }
++
+             this.lootTable = null;
+             this.setChanged();
+         }
 @@ -138,7 +_,10 @@
              double d5 = blockPos.getZ() + 0.5 * d1 + d2;
              ItemEntity itemEntity = new ItemEntity(level, d3, d4, d5, this.item.split(level.random.nextInt(21) + 10));

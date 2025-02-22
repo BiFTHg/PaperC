@@ -119,6 +119,7 @@ abstract class MockitoAgentProvider : CommandLineArgumentProvider {
 }
 
 dependencies {
+    implementation(project(":custom-events"))
     implementation(project(":paper-api"))
     implementation("ca.spottedleaf:concurrentutil:0.0.3")
     implementation("org.jline:jline-terminal-ffm:3.27.1") // use ffm on java 22+
