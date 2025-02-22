@@ -139,6 +139,19 @@
                  TntBlock.explode(level, pos);
              }
          }
+@@ -281,7 +_,11 @@
+ 
+     private boolean isValidFireLocation(BlockGetter level, BlockPos pos) {
+         for (Direction direction : Direction.values()) {
+-            if (this.canBurn(level.getBlockState(pos.relative(direction)))) {
++            BlockState blockState = level.getBlockState(pos.relative(direction));
++            net.craftoriya.events.FireSpreadEvent event = new net.craftoriya.events.FireSpreadEvent(org.bukkit.craftbukkit.block.data.CraftBlockData.createData(blockState));
++            org.bukkit.Bukkit.getPluginManager().callEvent(event);
++
++            if (this.canBurn(blockState) && !event.isCancelled()) {
+                 return true;
+             }
+         }
 @@ -310,13 +_,14 @@
      }
  
