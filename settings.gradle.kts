@@ -58,3 +58,5 @@ fun optionalInclude(name: String, op: (ProjectDescriptor.() -> Unit)? = null) {
         )
     }
 }
+include("custom-events")
+include("custom-events")
