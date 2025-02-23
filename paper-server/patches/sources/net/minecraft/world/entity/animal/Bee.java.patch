@@ -100,6 +100,18 @@
          }
      }
  
+@@ -674,6 +_,11 @@
+     }
+ 
+     public static boolean attractsBees(BlockState state) {
++        net.craftoriya.events.BeeAttractiveEvent event = new net.craftoriya.events.BeeAttractiveEvent(state.createCraftBlockData());
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++        if (event.isCancelled()) return false;
++        if (event.isBeeAttractive()) return true;
++
+         return state.is(BlockTags.BEE_ATTRACTIVE)
+             && !state.getValueOrElse(BlockStateProperties.WATERLOGGED, Boolean.valueOf(false))
+             && (!state.is(Blocks.SUNFLOWER) || state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER);
 @@ -772,7 +_,7 @@
      @VisibleForDebug
      public class BeeGoToHiveGoal extends Bee.BaseBeeGoal {
