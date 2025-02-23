@@ -1,30 +1,77 @@
 --- a/net/minecraft/world/level/block/GrowingPlantHeadBlock.java
 +++ b/net/minecraft/world/level/block/GrowingPlantHeadBlock.java
-@@ -44,13 +_,31 @@
+@@ -34,23 +_,75 @@
+ 
+     @Override
+     public BlockState getStateForPlacement(RandomSource random) {
+-        return this.defaultBlockState().setValue(AGE, Integer.valueOf(random.nextInt(25)));
++        // PaperC start
++        if (this == Blocks.KELP) {
++            return this.defaultBlockState().setValue(AGE, random.nextInt(25));
++        }
++        return this.defaultBlockState().setValue(AGE, MAX_AGE);
++        // PaperC end
+     }
+ 
+     @Override
+     protected boolean isRandomlyTicking(BlockState state) {
+-        return state.getValue(AGE) < 25;
++        // PaperC start
++        if (this == Blocks.KELP) {
++            return state.getValue(GrowingPlantHeadBlock.AGE) < 25;
++        } else if (this == Blocks.TWISTING_VINES) {
++            return state.getValue(GrowingPlantHeadBlock.AGE) >= 17;
++        } else if (this == Blocks.WEEPING_VINES) {
++            return state.getValue(GrowingPlantHeadBlock.AGE) >= 23;
++        } else {
++            return state.getValue(GrowingPlantHeadBlock.AGE) >= 24;
++        }
++        // PaperC end
+     }
  
      @Override
      protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
 -        if (state.getValue(AGE) < 25 && random.nextDouble() < this.growPerTickProbability) {
-+        // Spigot start
-+        int modifier = 100;
++        // PaperC start
++        int modifier;
++        int age;
 +        if (this == Blocks.KELP) {
 +            modifier = level.spigotConfig.kelpModifier;
++            if (state.getValue(GrowingPlantHeadBlock.AGE) < 25 && random.nextDouble() < ((modifier / 100.0D) * this.growPerTickProbability)) {
++                BlockPos blockposition1 = pos.relative(this.growthDirection);
++
++                if (this.canGrowInto(level.getBlockState(blockposition1))) {
++                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(level, pos, blockposition1, this.getGrowIntoState(state, level.random, level));
++                }
++            }
++            return;
 +        } else if (this == Blocks.TWISTING_VINES) {
 +            modifier = level.spigotConfig.twistingVinesModifier;
++            age = 17;
 +        } else if (this == Blocks.WEEPING_VINES) {
 +            modifier = level.spigotConfig.weepingVinesModifier;
-+        } else if (this == Blocks.CAVE_VINES) {
++            age = 23;
++        } else {
 +            modifier = level.spigotConfig.caveVinesModifier;
++            age = 24;
 +        }
-+        if (state.getValue(AGE) < 25 && random.nextDouble() < ((modifier / 100.0D) * this.growPerTickProbability)) { // Spigot - SPIGOT-7159: Better modifier resolution
-+            // Spigot end
++        if (state.getValue(GrowingPlantHeadBlock.AGE) > age && random.nextDouble() < ((modifier / 100.0D) * this.growPerTickProbability)) {
              BlockPos blockPos = pos.relative(this.growthDirection);
              if (this.canGrowInto(level.getBlockState(blockPos))) {
 -                level.setBlockAndUpdate(blockPos, this.getGrowIntoState(state, level.random));
-+                org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(level, pos, blockPos, this.getGrowIntoState(state, level.random, level)); // CraftBukkit // Paper - Fix Spigot growth modifiers
++                BlockState newState;
++                double randomValue = random.nextDouble();
++                if (randomValue < 0.17) {
++                    newState = state.setValue(GrowingPlantHeadBlock.AGE, age);
++                } else {
++                    newState = state.setValue(GrowingPlantHeadBlock.AGE, 25);
++                }
++                org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(level, pos, blockPos, newState);
              }
          }
-     }
+-    }
++        // PaperC end
++    }
 +
 +    // Paper start - Fix Spigot growth modifiers
 +    protected BlockState getGrowIntoState(BlockState state, RandomSource random, @javax.annotation.Nullable Level level) {
