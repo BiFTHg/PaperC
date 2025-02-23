@@ -1,8 +1,30 @@
 --- a/net/minecraft/world/level/block/GrowingPlantHeadBlock.java
 +++ b/net/minecraft/world/level/block/GrowingPlantHeadBlock.java
-@@ -34,23 +_,75 @@
+@@ -33,24 +_,97 @@
+     protected abstract MapCodec<? extends GrowingPlantHeadBlock> codec();
  
      @Override
++    public void tick(final BlockState state, final ServerLevel world, final BlockPos pos, final RandomSource random) {
++        // PaperC start
++        int age;
++        if (this == Blocks.KELP) {
++            super.tick(state, world, pos, random);
++            return;
++        } else if (this == Blocks.TWISTING_VINES) {
++            age = 17;
++        } else if (this == Blocks.WEEPING_VINES) {
++            age = 23;
++        } else {
++            age = 24;
++        }
++        if (state.getValue(GrowingPlantHeadBlock.AGE) < age) {
++            return;
++        }
++        super.tick(state, world, pos, random);
++        // PaperC end
++    }
++
++    @Override
      public BlockState getStateForPlacement(RandomSource random) {
 -        return this.defaultBlockState().setValue(AGE, Integer.valueOf(random.nextInt(25)));
 +        // PaperC start
