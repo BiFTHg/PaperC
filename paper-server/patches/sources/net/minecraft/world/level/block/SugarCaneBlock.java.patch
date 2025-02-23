@@ -1,20 +1,41 @@
 --- a/net/minecraft/world/level/block/SugarCaneBlock.java
 +++ b/net/minecraft/world/level/block/SugarCaneBlock.java
-@@ -56,12 +_,13 @@
+@@ -42,6 +_,9 @@
+ 
+     @Override
+     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
++        int ageValue = state.getValue(SugarCaneBlock.AGE);
++        if (ageValue != 0) return;
++
+         if (!state.canSurvive(level, pos)) {
+             level.destroyBlock(pos, true);
+         }
+@@ -49,6 +_,9 @@
+ 
+     @Override
+     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
++        int ageValue = state.getValue(AGE);
++        if (ageValue != 0) return;
++
+         if (level.isEmptyBlock(pos.above())) {
+             int i = 1;
+ 
+@@ -56,13 +_,11 @@
                  i++;
              }
  
 -            if (i < 3) {
-+            if (i < level.paperConfig().maxGrowthHeight.reeds) { // Paper - Configurable cactus/bamboo/reed growth height
-                 int ageValue = state.getValue(AGE);
+-                int ageValue = state.getValue(AGE);
 -                if (ageValue == 15) {
 -                    level.setBlockAndUpdate(pos.above(), this.defaultBlockState());
-+                int modifier = level.spigotConfig.caneModifier; // Spigot - SPIGOT-7159: Better modifier resolution
-+                if (ageValue >= 15 || (modifier != 100 && random.nextFloat() < (modifier / (100.0f * 16)))) { // Spigot - SPIGOT-7159: Better modifier resolution
-+                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(level, pos.above(), this.defaultBlockState()); // CraftBukkit
-                     level.setBlock(pos, state.setValue(AGE, Integer.valueOf(0)), 4);
+-                    level.setBlock(pos, state.setValue(AGE, Integer.valueOf(0)), 4);
 -                } else {
-+                } else if (modifier == 100 || random.nextFloat() < (modifier / (100.0f * 16))) { // Spigot - SPIGOT-7159: Better modifier resolution
-                     level.setBlock(pos, state.setValue(AGE, Integer.valueOf(ageValue + 1)), 4);
+-                    level.setBlock(pos, state.setValue(AGE, Integer.valueOf(ageValue + 1)), 4);
++            if (i < level.paperConfig().maxGrowthHeight.reeds) { // Paper - Configurable cactus/bamboo/reed growth height
++                int modifier = level.spigotConfig.caneModifier; // Spigot - SPIGOT-7159: Better modifier resolution
++                if (random.nextFloat() < (modifier / (100.0f * 16))) { // Spigot - SPIGOT-7159: Better modifier resolution
++                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(level, pos.above(), this.defaultBlockState()); // CraftBukkit
++                    level.setBlock(pos, state.setValue(AGE, 0), 4);
                  }
              }
+         }
