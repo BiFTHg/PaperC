@@ -1,0 +1,13 @@
+--- a/net/minecraft/world/level/levelgen/feature/HugeFungusFeature.java
++++ b/net/minecraft/world/level/levelgen/feature/HugeFungusFeature.java
+@@ -176,9 +_,7 @@
+                 randomInt *= 2;
+             }
+ 
+-            int i = 23;
+-            int i1 = 25;
+-            WeepingVinesFeature.placeWeepingVinesColumn(level, random, mutableBlockPos, randomInt, 23, 25);
++            WeepingVinesFeature.placeWeepingVinesColumn(level, random, mutableBlockPos, randomInt, 24, 25);
+         }
+     }
+ }

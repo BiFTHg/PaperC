@@ -1,0 +1,13 @@
+--- a/net/minecraft/world/level/levelgen/feature/WeepingVinesFeature.java
++++ b/net/minecraft/world/level/levelgen/feature/WeepingVinesFeature.java
+@@ -87,9 +_,7 @@
+                         randomInt = 1;
+                     }
+ 
+-                    int i1 = 17;
+-                    int i2 = 25;
+-                    placeWeepingVinesColumn(level, random, mutableBlockPos, randomInt, 17, 25);
++                    placeWeepingVinesColumn(level, random, mutableBlockPos, randomInt, 24, 25);
+                 }
+             }
+         }
