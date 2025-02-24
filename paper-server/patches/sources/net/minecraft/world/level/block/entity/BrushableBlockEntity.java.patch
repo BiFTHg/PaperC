@@ -1,6 +1,6 @@
 --- a/net/minecraft/world/level/block/entity/BrushableBlockEntity.java
 +++ b/net/minecraft/world/level/block/entity/BrushableBlockEntity.java
-@@ -97,15 +_,26 @@
+@@ -97,15 +_,28 @@
                  .withParameter(LootContextParams.TOOL, stack)
                  .create(LootContextParamSets.ARCHAEOLOGY);
              ObjectArrayList<ItemStack> randomItems = lootTable.getRandomItems(lootParams, this.lootTableSeed);
@@ -9,6 +9,7 @@
 -            this.item = switch (randomItems.size()) {
 -                case 0 -> ItemStack.EMPTY;
 -                case 1 -> (ItemStack)randomItems.getFirst();
++            // PaperC start
 +            switch (randomItems.size()) {
 +                case 0 -> itemStack = ItemStack.EMPTY;
 +                case 1 -> itemStack = randomItems.getFirst();
@@ -27,6 +28,7 @@
 +            } else {
 +                this.item = ItemStack.fromBukkitCopy(event.getGeneratedItem());
 +            }
++            // PaperC end
 +
              this.lootTable = null;
              this.setChanged();
