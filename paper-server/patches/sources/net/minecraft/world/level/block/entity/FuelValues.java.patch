@@ -1,0 +1,12 @@
+--- a/net/minecraft/world/level/block/entity/FuelValues.java
++++ b/net/minecraft/world/level/block/entity/FuelValues.java
+@@ -48,6 +_,9 @@
+             .add(Items.CHARCOAL, smeltingTime * 8)
+             .add(ItemTags.LOGS, smeltingTime * 3 / 2)
+             .add(ItemTags.BAMBOO_BLOCKS, smeltingTime * 3 / 2)
++            // PaperC start
++            .add(Blocks.CHAIN_COMMAND_BLOCK, smeltingTime * 3 / 2)
++            // PaperC end
+             .add(ItemTags.PLANKS, smeltingTime * 3 / 2)
+             .add(Blocks.BAMBOO_MOSAIC, smeltingTime * 3 / 2)
+             .add(ItemTags.WOODEN_STAIRS, smeltingTime * 3 / 2)
