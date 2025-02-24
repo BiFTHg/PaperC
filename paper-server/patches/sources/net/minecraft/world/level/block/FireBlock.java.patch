@@ -174,3 +174,11 @@
      }
  
      @Override
+@@ -331,6 +_,7 @@
+ 
+     public static void bootStrap() {
+         FireBlock fireBlock = (FireBlock)Blocks.FIRE;
++        fireBlock.setFlammable(Blocks.NOTE_BLOCK, 5, 20);
+         fireBlock.setFlammable(Blocks.OAK_PLANKS, 5, 20);
+         fireBlock.setFlammable(Blocks.SPRUCE_PLANKS, 5, 20);
+         fireBlock.setFlammable(Blocks.BIRCH_PLANKS, 5, 20);
