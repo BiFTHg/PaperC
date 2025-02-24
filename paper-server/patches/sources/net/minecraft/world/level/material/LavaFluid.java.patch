@@ -14,13 +14,15 @@
                              level.setBlockAndUpdate(blockPos, BaseFireBlock.getState(level, blockPos));
                              return;
                          }
-@@ -103,6 +_,18 @@
+@@ -103,6 +_,20 @@
                      }
  
                      if (level.isEmptyBlock(blockPos1.above()) && this.isFlammable(level, blockPos1)) {
++                        // PaperC start
 +                        net.craftoriya.events.FireSpreadEvent fireSpreadEvent = new net.craftoriya.events.FireSpreadEvent(org.bukkit.craftbukkit.block.data.CraftBlockData.createData(level.getBlockState(blockPos1)));
 +                        org.bukkit.Bukkit.getPluginManager().callEvent(fireSpreadEvent);
 +                        if (fireSpreadEvent.isCancelled()) return;
++                        // PaperC end
 +
 +                        // CraftBukkit start - Prevent lava putting something on fire
 +                        BlockPos up = blockPos1.above();
@@ -33,18 +35,20 @@
                          level.setBlockAndUpdate(blockPos1.above(), BaseFireBlock.getState(level, blockPos1));
                      }
                  }
-@@ -112,7 +_,13 @@
+@@ -112,7 +_,15 @@
  
      private boolean hasFlammableNeighbours(LevelReader level, BlockPos pos) {
          for (Direction direction : Direction.values()) {
 -            if (this.isFlammable(level, pos.relative(direction))) {
++            // PaperC start
 +            BlockPos pos1 = pos.relative(direction);
 +
 +            net.craftoriya.events.FireSpreadEvent fireSpreadEvent = new net.craftoriya.events.FireSpreadEvent(org.bukkit.craftbukkit.block.data.CraftBlockData.createData(level.getBlockState(pos1)));
 +            org.bukkit.Bukkit.getPluginManager().callEvent(fireSpreadEvent);
 +            if (fireSpreadEvent.isCancelled()) return false;
++            // PaperC end
 +
-+            if (this.isFlammable(level, pos1)) {
++            if (this.isFlammable(level, pos1)) { // PaperC pos1 as argument
                  return true;
              }
          }
