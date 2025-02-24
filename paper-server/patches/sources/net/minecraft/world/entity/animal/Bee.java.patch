@@ -100,14 +100,16 @@
          }
      }
  
-@@ -674,6 +_,11 @@
+@@ -674,6 +_,13 @@
      }
  
      public static boolean attractsBees(BlockState state) {
++        // PaperC start
 +        net.craftoriya.events.BeeAttractiveEvent event = new net.craftoriya.events.BeeAttractiveEvent(state.createCraftBlockData());
 +        org.bukkit.Bukkit.getPluginManager().callEvent(event);
 +        if (event.isCancelled()) return false;
 +        if (event.isBeeAttractive()) return true;
++        // PaperC end
 +
          return state.is(BlockTags.BEE_ATTRACTIVE)
              && !state.getValueOrElse(BlockStateProperties.WATERLOGGED, Boolean.valueOf(false))
