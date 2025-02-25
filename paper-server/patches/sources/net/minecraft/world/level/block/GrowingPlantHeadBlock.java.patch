@@ -1,13 +1,28 @@
 --- a/net/minecraft/world/level/block/GrowingPlantHeadBlock.java
 +++ b/net/minecraft/world/level/block/GrowingPlantHeadBlock.java
-@@ -33,24 +_,84 @@
+@@ -19,6 +_,7 @@
+ public abstract class GrowingPlantHeadBlock extends GrowingPlantBlock implements BonemealableBlock {
+     public static final IntegerProperty AGE = BlockStateProperties.AGE_25;
+     public static final int MAX_AGE = 25;
++    public static final int MAX_GROWING_AGE = 24;
+     private final double growPerTickProbability;
+ 
+     protected GrowingPlantHeadBlock(
+@@ -26,42 +_,81 @@
+     ) {
+         super(properties, growthDirection, shape, scheduleFluidTicks);
+         this.growPerTickProbability = growPerTickProbability;
+-        this.registerDefaultState(this.stateDefinition.any().setValue(AGE, Integer.valueOf(0)));
++        this.registerDefaultState(this.stateDefinition.any().setValue(AGE, Integer.valueOf(24)));
+     }
+ 
+     @Override
      protected abstract MapCodec<? extends GrowingPlantHeadBlock> codec();
  
      @Override
 +    public void tick(final BlockState state, final ServerLevel world, final BlockPos pos, final RandomSource random) {
 +        // PaperC start
-+        int age = 24;
-+        if (state.getValue(GrowingPlantHeadBlock.AGE) < age) {
++        if (state.getValue(GrowingPlantHeadBlock.AGE) < MAX_GROWING_AGE) {
 +            return;
 +        }
 +        super.tick(state, world, pos, random);
@@ -18,10 +33,7 @@
      public BlockState getStateForPlacement(RandomSource random) {
 -        return this.defaultBlockState().setValue(AGE, Integer.valueOf(random.nextInt(25)));
 +        // PaperC start
-+        /*if (this == Blocks.KELP) {
-+            return this.defaultBlockState().setValue(AGE, random.nextInt(25));
-+        }*/
-+        return this.defaultBlockState().setValue(AGE, MAX_AGE);
++        return this.defaultBlockState().setValue(AGE, MAX_GROWING_AGE);
 +        // PaperC end
      }
  
@@ -29,11 +41,7 @@
      protected boolean isRandomlyTicking(BlockState state) {
 -        return state.getValue(AGE) < 25;
 +        // PaperC start
-+        /*if (this == Blocks.KELP) {
-+            return state.getValue(GrowingPlantHeadBlock.AGE) < 25;
-+        } else {*/
-+        return state.getValue(GrowingPlantHeadBlock.AGE) >= 24;
-+        //}
++        return state.getValue(GrowingPlantHeadBlock.AGE) >= MAX_GROWING_AGE;
 +        // PaperC end
      }
  
@@ -42,18 +50,6 @@
 -        if (state.getValue(AGE) < 25 && random.nextDouble() < this.growPerTickProbability) {
 +        // PaperC start
 +        int modifier;
-+        int age = 24;
-+        /*if (this == Blocks.KELP) {
-+            modifier = level.spigotConfig.kelpModifier;
-+            if (state.getValue(GrowingPlantHeadBlock.AGE) < 25 && random.nextDouble() < ((modifier / 100.0D) * this.growPerTickProbability)) {
-+                BlockPos blockposition1 = pos.relative(this.growthDirection);
-+
-+                if (this.canGrowInto(level.getBlockState(blockposition1))) {
-+                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(level, pos, blockposition1, this.getGrowIntoState(state, level.random, level));
-+                }
-+            }
-+            return;*/
-+        //} else {
 +        if (this == Blocks.WEEPING_VINES) {
 +            modifier = level.spigotConfig.weepingVinesModifier;
 +        } else if (this == Blocks.TWISTING_VINES) {
@@ -63,17 +59,16 @@
 +        } else {
 +            modifier = level.spigotConfig.caveVinesModifier;
 +        }
-+        //}
-+        if (state.getValue(GrowingPlantHeadBlock.AGE) > age && random.nextDouble() < ((modifier / 100.0D) * this.growPerTickProbability)) {
++        if (state.getValue(GrowingPlantHeadBlock.AGE) == MAX_GROWING_AGE && random.nextDouble() < ((modifier / 100.0D) * this.growPerTickProbability)) {
              BlockPos blockPos = pos.relative(this.growthDirection);
              if (this.canGrowInto(level.getBlockState(blockPos))) {
 -                level.setBlockAndUpdate(blockPos, this.getGrowIntoState(state, level.random));
 +                BlockState newState;
 +                double randomValue = random.nextDouble();
 +                if (randomValue < 0.17) {
-+                    newState = state.setValue(GrowingPlantHeadBlock.AGE, age);
++                    newState = state.setValue(GrowingPlantHeadBlock.AGE, MAX_AGE);
 +                } else {
-+                    newState = state.setValue(GrowingPlantHeadBlock.AGE, 25);
++                    newState = state.setValue(GrowingPlantHeadBlock.AGE, MAX_GROWING_AGE);
 +                }
 +                org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockSpreadEvent(level, pos, blockPos, newState);
              }
@@ -90,3 +85,45 @@
  
      protected BlockState getGrowIntoState(BlockState state, RandomSource random) {
          return state.cycle(AGE);
+     }
+ 
+     public BlockState getMaxAgeState(BlockState state) {
+-        return state.setValue(AGE, Integer.valueOf(25));
++        return state.setValue(AGE, Integer.valueOf(MAX_AGE));
+     }
+ 
+     public boolean isMaxAge(BlockState state) {
+-        return state.getValue(AGE) == 25;
++        return state.getValue(AGE) == MAX_AGE;
+     }
+ 
+     protected BlockState updateBodyAfterConvertedFromHead(BlockState head, BlockState body) {
+@@ -87,9 +_,11 @@
+             if (this.scheduleFluidTicks) {
+                 scheduledTickAccess.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+             }
+-
+             return super.updateShape(state, level, scheduledTickAccess, pos, direction, neighborPos, neighborState, random);
+         } else {
++            if (state.getValue(AGE) < MAX_GROWING_AGE) {
++                return state;
++            }
+             return this.updateBodyAfterConvertedFromHead(state, this.getBodyBlock().defaultBlockState());
+         }
+     }
+@@ -112,13 +_,13 @@
+     @Override
+     public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+         BlockPos blockPos = pos.relative(this.growthDirection);
+-        int min = Math.min(state.getValue(AGE) + 1, 25);
++        int min = Math.min(state.getValue(AGE) + 1, MAX_AGE);
+         int blocksToGrowWhenBonemealed = this.getBlocksToGrowWhenBonemealed(random);
+ 
+         for (int i = 0; i < blocksToGrowWhenBonemealed && this.canGrowInto(level.getBlockState(blockPos)); i++) {
+             level.setBlockAndUpdate(blockPos, state.setValue(AGE, Integer.valueOf(min)));
+             blockPos = blockPos.relative(this.growthDirection);
+-            min = Math.min(min + 1, 25);
++            min = Math.min(min + 1, MAX_AGE);
+         }
+     }
+ 
