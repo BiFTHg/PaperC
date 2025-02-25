@@ -1,17 +1,36 @@
 --- a/net/minecraft/world/level/block/CactusBlock.java
 +++ b/net/minecraft/world/level/block/CactusBlock.java
-@@ -56,14 +_,16 @@
+@@ -41,6 +_,9 @@
+ 
+     @Override
+     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
++        int ageValue = state.getValue(CactusBlock.AGE);
++        if (ageValue != 0) return;
++
+         if (!state.canSurvive(level, pos)) {
+             level.destroyBlock(pos, true);
+         }
+@@ -48,6 +_,9 @@
+ 
+     @Override
+     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
++        int ageValue = state.getValue(CactusBlock.AGE);
++        if (ageValue != 0) return;
++
+         BlockPos blockPos = pos.above();
+         if (level.isEmptyBlock(blockPos)) {
+             int i = 1;
+@@ -56,14 +_,14 @@
                  i++;
              }
  
 -            if (i < 3) {
-+            if (i < level.paperConfig().maxGrowthHeight.cactus) { // Paper - Configurable cactus/bamboo/reed growth height
-                 int ageValue = state.getValue(AGE);
+-                int ageValue = state.getValue(AGE);
 -                if (ageValue == 15) {
 -                    level.setBlockAndUpdate(blockPos, this.defaultBlockState());
-+
++            if (i < level.paperConfig().maxGrowthHeight.cactus) { // Paper - Configurable cactus/bamboo/reed growth height
 +                int modifier = level.spigotConfig.cactusModifier; // Spigot - SPIGOT-7159: Better modifier resolution
-+                if (ageValue >= 15 || (modifier != 100 && random.nextFloat() < (modifier / (100.0f * 16)))) { // Spigot - SPIGOT-7159: Better modifier
++                if (modifier != 100 && random.nextFloat() < modifier / (100.0f * 16)) { // Spigot - SPIGOT-7159: Better modifier
 +                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(level, blockPos, this.defaultBlockState()); // CraftBukkit
                      BlockState blockState = state.setValue(AGE, Integer.valueOf(0));
                      level.setBlock(pos, blockState, 4);
