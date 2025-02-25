@@ -1,42 +1,190 @@
 --- a/net/minecraft/world/level/block/CropBlock.java
 +++ b/net/minecraft/world/level/block/CropBlock.java
-@@ -88,8 +_,25 @@
+@@ -22,6 +_,7 @@
+ import net.minecraft.world.phys.shapes.CollisionContext;
+ import net.minecraft.world.phys.shapes.VoxelShape;
+ 
++// TODO fix beetroot and torchflower
+ public class CropBlock extends BushBlock implements BonemealableBlock {
+     public static final MapCodec<CropBlock> CODEC = simpleCodec(CropBlock::new);
+     public static final int MAX_AGE = 7;
+@@ -62,7 +_,7 @@
+     }
+ 
+     public int getMaxAge() {
+-        return 7;
++        return MAX_AGE;
+     }
+ 
+     public int getAge(BlockState state) {
+@@ -73,9 +_,18 @@
+         return this.defaultBlockState().setValue(this.getAgeProperty(), Integer.valueOf(age));
+     }
+ 
++    // PaperC start
+     public final boolean isMaxAge(BlockState state) {
+-        return this.getAge(state) >= this.getMaxAge();
++        if (state.is(Blocks.BEETROOTS) || state.is (Blocks.TORCHFLOWER_CROP)) {
++            return this.getAge(state) >= this.getMaxAge();
++        }
++        if (this.isVanillaCrop(state)) {
++            return this.getAge(state) >= this.getMaxAge();
++        } else {
++            return this.getAge(state) >= this.getMaxAge() - 1;
++        }
+     }
++    // PaperC end
+ 
+     @Override
+     protected boolean isRandomlyTicking(BlockState state) {
+@@ -86,24 +_,136 @@
+     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+         if (level.getRawBrightness(pos, 0) >= 9) {
              int age = this.getAge(state);
-             if (age < this.getMaxAge()) {
+-            if (age < this.getMaxAge()) {
++            int maxAge;
++            if (state.is(Blocks.BEETROOTS) || state.is (Blocks.TORCHFLOWER_CROP)) {
++                maxAge = this.getMaxAge();
++            } else {
++                if (this.isVanillaCrop(state)) {
++                    maxAge = this.getMaxAge();
++                } else {
++                    maxAge = this.getMaxAge() - 1;
++                }
++            }
++
++            if (age < maxAge) {
                  float growthSpeed = getGrowthSpeed(this, level, pos);
 -                if (random.nextInt((int)(25.0F / growthSpeed) + 1) == 0) {
 -                    level.setBlock(pos, this.getStateForAge(age + 1), 2);
 +                // Spigot start
 +                int modifier = 100;
-+                if (this == Blocks.BEETROOTS) {
-+                    modifier = level.spigotConfig.beetrootModifier;
-+                } else if (this == Blocks.CARROTS) {
-+                    modifier = level.spigotConfig.carrotModifier;
-+                } else if (this == Blocks.POTATOES) {
-+                    modifier = level.spigotConfig.potatoModifier;
-+                // Paper start - Fix Spigot growth modifiers
-+                } else if (this == Blocks.TORCHFLOWER_CROP) {
-+                    modifier = level.spigotConfig.torchFlowerModifier;
-+                // Paper end - Fix Spigot growth modifiers
-+                } else if (this == Blocks.WHEAT) {
-+                    modifier = level.spigotConfig.wheatModifier;
++                // PaperC start
++                if (state.is(Blocks.BEETROOTS) || state.is (Blocks.TORCHFLOWER_CROP)) {
++                    if (this == Blocks.BEETROOTS) {
++                        modifier = level.spigotConfig.beetrootModifier;
++                    } else if (this == Blocks.TORCHFLOWER_CROP) {
++                        modifier = level.spigotConfig.torchFlowerModifier;
++                    }
++                    if (random.nextFloat() < (modifier / (100.0f * (Math.floor((25.0F / growthSpeed) + 1))))) { // Spigot - SPIGOT-7159: Better modifier resolution
++                        // Spigot end
++                        org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(level, pos, this.getStateForAge(age + 1), 2); // CraftBukkit
++                    }
++                    return;
 +                }
++                if (this.isVanillaCrop(state)) {
++                    if (this == Blocks.CARROTS) {
++                        modifier = level.spigotConfig.carrotModifier;
++                    } else if (this == Blocks.POTATOES) {
++                        modifier = level.spigotConfig.potatoModifier;
++                        // Paper start - Fix Spigot growth modifiers
++                    } else if (this == Blocks.WHEAT) {
++                        modifier = level.spigotConfig.wheatModifier;
++                    }
++                }
++                // PaperC end
 +
-+                if (random.nextFloat() < (modifier / (100.0f * (Math.floor((25.0F / growthSpeed) + 1))))) { // Spigot - SPIGOT-7159: Better modifier resolution
++                if (random.nextFloat() < ((modifier/2.0) / (100.0f * (Math.floor((25.0F / growthSpeed) + 1))))) { // Spigot - SPIGOT-7159: Better modifier resolution
 +                    // Spigot end
-+                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(level, pos, this.getStateForAge(age + 1), 2); // CraftBukkit
++
++                    // PaperC start
++                    int iAge = age + 2;
++                    if (maxAge == MAX_AGE) {
++                        if (iAge > 4) {
++                            iAge = 7;
++                        }
++                    } else {
++                        if (iAge > 5) {
++                            iAge -= 1;
++                        }
++                    }
++                    BlockState stateForAge = this.getStateForAge(iAge);
++                    // PaperC end
++                    org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(level, pos, stateForAge, 2); // CraftBukkit
                  }
              }
          }
-@@ -102,7 +_,7 @@
-             i = maxAge;
-         }
- 
--        level.setBlock(pos, this.getStateForAge(i), 2);
-+        org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(level, pos, this.getStateForAge(i), 2); // CraftBukkit
      }
  
+     public void growCrops(Level level, BlockPos pos, BlockState state) {
+-        int i = this.getAge(state) + this.getBonemealAgeIncrease(level);
+-        int maxAge = this.getMaxAge();
+-        if (i > maxAge) {
+-            i = maxAge;
+-        }
+-
+-        level.setBlock(pos, this.getStateForAge(i), 2);
+-    }
++        int ageAfterBonemeal;
++        int maxAge;
++        // PaperC start
++
++        if (state.is(Blocks.BEETROOTS) || state.is (Blocks.TORCHFLOWER_CROP)) {
++            maxAge = this.getMaxAge();
++            ageAfterBonemeal = this.getAge(state) + this.getBonemealAgeIncrease(level);;
++        } else {
++            if (this.isVanillaCrop(state)) {
++                int age = this.getAge(state);
++                maxAge = this.getMaxAge();
++                ageAfterBonemeal = age;
++                switch (age) {
++                    case 0: {
++                        if (level.random.nextFloat() <= 0.5) {
++                            ageAfterBonemeal += 2;
++                        } else {
++                            ageAfterBonemeal += 4;
++                        }
++                    } break;
++                    case 2: {
++                        if (level.random.nextFloat() <= 0.5) {
++                            ageAfterBonemeal += 2;
++                        } else {
++                            ageAfterBonemeal += 5;
++                        }
++                    } break;
++                    case 4: ageAfterBonemeal += 3; break;
++                }
++            } else {
++                int age = this.getAge(state);
++                maxAge = this.getMaxAge() - 1;
++                ageAfterBonemeal = age;
++                switch (age) {
++                    case 1: {
++                        if (level.random.nextFloat() <= 0.5) {
++                            ageAfterBonemeal += 2;
++                        } else {
++                            ageAfterBonemeal += 4;
++                        } break;
++                    }
++                    case 3: {
++                        if (level.random.nextFloat() <= 0.5) {
++                            ageAfterBonemeal += 2;
++                        } else {
++                            ageAfterBonemeal += 3;
++                        } break;
++                    }
++                    case 5: ageAfterBonemeal += 1; break;
++                }
++            }
++        }
++        // PaperC end
++        if (ageAfterBonemeal > maxAge) {
++            ageAfterBonemeal = maxAge;
++        }
++
++        org.bukkit.craftbukkit.event.CraftEventFactory.handleBlockGrowEvent(level, pos, this.getStateForAge(ageAfterBonemeal), 2); // CraftBukkit
++    }
++
++    // PaperC start
++    protected boolean isVanillaCrop(BlockState state) {
++        int age = this.getAge(state);
++        if (age == 6) return false;
++        return this.getAge(state) % 2 == 0;
++    }
++    // PaperC end
+ 
      protected int getBonemealAgeIncrease(Level level) {
+         return Mth.nextInt(level.random, 2, 5);
 @@ -164,7 +_,8 @@
  
      @Override
