@@ -8,12 +8,12 @@
      private final double growPerTickProbability;
  
      protected GrowingPlantHeadBlock(
-@@ -26,42 +_,81 @@
+@@ -26,42 +_,77 @@
      ) {
          super(properties, growthDirection, shape, scheduleFluidTicks);
          this.growPerTickProbability = growPerTickProbability;
 -        this.registerDefaultState(this.stateDefinition.any().setValue(AGE, Integer.valueOf(0)));
-+        this.registerDefaultState(this.stateDefinition.any().setValue(AGE, Integer.valueOf(24)));
++        this.registerDefaultState(this.stateDefinition.any().setValue(AGE, Integer.valueOf(MAX_GROWING_AGE)));
      }
  
      @Override
@@ -32,17 +32,13 @@
 +    @Override
      public BlockState getStateForPlacement(RandomSource random) {
 -        return this.defaultBlockState().setValue(AGE, Integer.valueOf(random.nextInt(25)));
-+        // PaperC start
-+        return this.defaultBlockState().setValue(AGE, MAX_GROWING_AGE);
-+        // PaperC end
++        return this.defaultBlockState().setValue(AGE, MAX_GROWING_AGE); // PaperC MAX_GROWING_AGE
      }
  
      @Override
      protected boolean isRandomlyTicking(BlockState state) {
 -        return state.getValue(AGE) < 25;
-+        // PaperC start
-+        return state.getValue(GrowingPlantHeadBlock.AGE) >= MAX_GROWING_AGE;
-+        // PaperC end
++        return state.getValue(GrowingPlantHeadBlock.AGE) >= MAX_GROWING_AGE; // PaperC MAX_GROWING_AGE
      }
  
      @Override
@@ -89,25 +85,27 @@
  
      public BlockState getMaxAgeState(BlockState state) {
 -        return state.setValue(AGE, Integer.valueOf(25));
-+        return state.setValue(AGE, Integer.valueOf(MAX_AGE));
++        return state.setValue(AGE, Integer.valueOf(MAX_AGE)); // PaperC MAX_AGE
      }
  
      public boolean isMaxAge(BlockState state) {
 -        return state.getValue(AGE) == 25;
-+        return state.getValue(AGE) == MAX_AGE;
++        return state.getValue(AGE) == MAX_AGE; // PaperC MAX_AGE
      }
  
      protected BlockState updateBodyAfterConvertedFromHead(BlockState head, BlockState body) {
-@@ -87,9 +_,11 @@
+@@ -87,9 +_,13 @@
              if (this.scheduleFluidTicks) {
                  scheduledTickAccess.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
              }
 -
              return super.updateShape(state, level, scheduledTickAccess, pos, direction, neighborPos, neighborState, random);
          } else {
++            // PaperC start
 +            if (state.getValue(AGE) < MAX_GROWING_AGE) {
 +                return state;
 +            }
++            // PaperC end
              return this.updateBodyAfterConvertedFromHead(state, this.getBodyBlock().defaultBlockState());
          }
      }
@@ -116,14 +114,14 @@
      public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
          BlockPos blockPos = pos.relative(this.growthDirection);
 -        int min = Math.min(state.getValue(AGE) + 1, 25);
-+        int min = Math.min(state.getValue(AGE) + 1, MAX_AGE);
++        int min = Math.min(state.getValue(AGE) + 1, MAX_AGE); // PaperC MAX_AGE
          int blocksToGrowWhenBonemealed = this.getBlocksToGrowWhenBonemealed(random);
  
          for (int i = 0; i < blocksToGrowWhenBonemealed && this.canGrowInto(level.getBlockState(blockPos)); i++) {
              level.setBlockAndUpdate(blockPos, state.setValue(AGE, Integer.valueOf(min)));
              blockPos = blockPos.relative(this.growthDirection);
 -            min = Math.min(min + 1, 25);
-+            min = Math.min(min + 1, MAX_AGE);
++            min = Math.min(min + 1, MAX_AGE); // PaperC MAX_AGE
          }
      }
  
