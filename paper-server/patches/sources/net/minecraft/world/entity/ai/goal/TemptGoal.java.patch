@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/entity/ai/goal/TemptGoal.java
 +++ b/net/minecraft/world/entity/ai/goal/TemptGoal.java
+@@ -7,7 +_,6 @@
+ import net.minecraft.world.entity.PathfinderMob;
+ import net.minecraft.world.entity.ai.attributes.Attributes;
+ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
+-import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.item.ItemStack;
+ 
+ public class TemptGoal extends Goal {
 @@ -21,7 +_,7 @@
      private double pRotX;
      private double pRotY;
@@ -9,7 +17,7 @@
      private int calmDown;
      private boolean isRunning;
      private final Predicate<ItemStack> items;
-@@ -44,6 +_,15 @@
+@@ -44,12 +_,24 @@
          } else {
              this.player = getServerLevel(this.mob)
                  .getNearestPlayer(this.targetingConditions.range(this.mob.getAttributeValue(Attributes.TEMPT_RANGE)), this.mob);
@@ -25,3 +33,13 @@
              return this.player != null;
          }
      }
+ 
+     private boolean shouldFollow(LivingEntity entity) {
+-        return this.items.test(entity.getMainHandItem()) || this.items.test(entity.getOffhandItem());
++        boolean shouldFollow = this.items.test(entity.getMainHandItem()) || this.items.test(entity.getOffhandItem());
++        net.craftoriya.events.EntityTemptAttemptEvent event = new net.craftoriya.events.EntityTemptAttemptEvent(this.mob.getBukkitEntity(), entity.getBukkitEntity(), shouldFollow);
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++        return event.getShouldFollow();
+     }
+ 
+     @Override
