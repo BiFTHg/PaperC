@@ -24,8 +24,18 @@
      }
  
      @Override
-@@ -138,8 +_,9 @@
-         if (this.isFood(itemInHand)) {
+@@ -135,11 +_,18 @@
+     @Override
+     public InteractionResult mobInteract(Player player, InteractionHand hand) {
+         ItemStack itemInHand = player.getItemInHand(hand);
+-        if (this.isFood(itemInHand)) {
++        boolean isFood = this.isFood(itemInHand);
++
++        org.bukkit.inventory.EquipmentSlot bukkitHand = hand == InteractionHand.MAIN_HAND ? org.bukkit.inventory.EquipmentSlot.HAND : org.bukkit.inventory.EquipmentSlot.OFF_HAND;
++        net.craftoriya.events.PlayerFeedEntityEvent event = new net.craftoriya.events.PlayerFeedEntityEvent(this.getBukkitEntity(), ((ServerPlayer) player).getBukkitEntity(), itemInHand.asBukkitCopy(), isFood, bukkitHand);
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++
++        if (event.isFood()) {
              int age = this.getAge();
              if (!this.level().isClientSide && age == 0 && this.canFallInLove()) {
 +                final ItemStack breedCopy = itemInHand.copy(); // Paper - Fix EntityBreedEvent copying
