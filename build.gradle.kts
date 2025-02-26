@@ -57,15 +57,6 @@ subprojects {
         mavenCentral()
         maven(paperMavenPublicUrl)
     }
-
-    extensions.configure<PublishingExtension> {
-        repositories {
-            maven("https://repo.papermc.io/repository/maven-snapshots/") {
-                name = "paperSnapshots"
-                credentials(PasswordCredentials::class)
-            }
-        }
-    }
 }
 
 tasks.register("printMinecraftVersion") {

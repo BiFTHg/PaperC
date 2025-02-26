@@ -6,16 +6,16 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public class BeeAttractiveEvent extends Event implements Cancellable {
+public class BeeAttractiveBlockEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private final BlockData blockData;
     private boolean isCancelled;
     private boolean isBeeAttractive;
 
-    public BeeAttractiveEvent(BlockData blockData) {
+    public BeeAttractiveBlockEvent(BlockData blockData, boolean isBeeAttractive) {
         this.blockData = blockData;
+        this.isBeeAttractive = isBeeAttractive;
         this.isCancelled = false;
-        this.isBeeAttractive = false;
     }
 
     public boolean isBeeAttractive() {

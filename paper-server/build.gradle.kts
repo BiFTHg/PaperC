@@ -8,7 +8,7 @@ plugins {
     id("io.papermc.paperweight.core")
 }
 
-val paperMavenPublicUrl = "https://repo.papermc.io/repository/maven-public/"
+//val paperMavenPublicUrl = "https://repo.papermc.io/repository/maven-public/"
 
 dependencies {
     mache("io.papermc:mache:1.21.4+build.7")
@@ -39,12 +39,12 @@ paperweight {
     )
 }
 
-tasks.generateDevelopmentBundle {
+/*tasks.generateDevelopmentBundle {
     libraryRepositories.addAll(
         "https://repo.maven.apache.org/maven2/",
         paperMavenPublicUrl,
     )
-}
+}*/
 
 abstract class Services {
     @get:Inject
@@ -55,7 +55,7 @@ abstract class Services {
 }
 val services = objects.newInstance<Services>()
 
-if (project.providers.gradleProperty("publishDevBundle").isPresent) {
+/*if (project.providers.gradleProperty("publishDevBundle").isPresent) {
     val devBundleComponent = services.softwareComponentFactory.adhoc("devBundle")
     components.add(devBundleComponent)
 
@@ -92,14 +92,7 @@ if (project.providers.gradleProperty("publishDevBundle").isPresent) {
             )
         }
     }
-
-    publishing {
-        publications.create<MavenPublication>("devBundle") {
-            artifactId = "dev-bundle"
-            from(devBundleComponent)
-        }
-    }
-}
+}*/
 
 val log4jPlugins = sourceSets.create("log4jPlugins")
 configurations.named(log4jPlugins.compileClasspathConfigurationName) {

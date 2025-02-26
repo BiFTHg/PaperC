@@ -100,20 +100,23 @@
          }
      }
  
-@@ -674,6 +_,13 @@
+@@ -674,9 +_,15 @@
      }
  
      public static boolean attractsBees(BlockState state) {
+-        return state.is(BlockTags.BEE_ATTRACTIVE)
 +        // PaperC start
-+        net.craftoriya.events.BeeAttractiveEvent event = new net.craftoriya.events.BeeAttractiveEvent(state.createCraftBlockData());
-+        org.bukkit.Bukkit.getPluginManager().callEvent(event);
-+        if (event.isCancelled()) return false;
-+        if (event.isBeeAttractive()) return true;
-+        // PaperC end
-+
-         return state.is(BlockTags.BEE_ATTRACTIVE)
++        boolean isBeeAttractive = state.is(BlockTags.BEE_ATTRACTIVE)
              && !state.getValueOrElse(BlockStateProperties.WATERLOGGED, Boolean.valueOf(false))
              && (!state.is(Blocks.SUNFLOWER) || state.getValue(DoublePlantBlock.HALF) == DoubleBlockHalf.UPPER);
++
++        net.craftoriya.events.BeeAttractiveBlockEvent event = new net.craftoriya.events.BeeAttractiveBlockEvent(state.createCraftBlockData(), isBeeAttractive);
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++        if (event.isCancelled()) return false;
++        return event.isBeeAttractive();
+     }
+ 
+     abstract class BaseBeeGoal extends Goal {
 @@ -772,7 +_,7 @@
      @VisibleForDebug
      public class BeeGoToHiveGoal extends Bee.BaseBeeGoal {
