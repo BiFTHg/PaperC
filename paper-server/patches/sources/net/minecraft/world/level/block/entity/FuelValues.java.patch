@@ -1,12 +1,26 @@
 --- a/net/minecraft/world/level/block/entity/FuelValues.java
 +++ b/net/minecraft/world/level/block/entity/FuelValues.java
-@@ -48,6 +_,9 @@
-             .add(Items.CHARCOAL, smeltingTime * 8)
-             .add(ItemTags.LOGS, smeltingTime * 3 / 2)
-             .add(ItemTags.BAMBOO_BLOCKS, smeltingTime * 3 / 2)
-+            // PaperC start
-+            .add(Blocks.CHAIN_COMMAND_BLOCK, smeltingTime * 3 / 2)
-+            // PaperC end
-             .add(ItemTags.PLANKS, smeltingTime * 3 / 2)
-             .add(Blocks.BAMBOO_MOSAIC, smeltingTime * 3 / 2)
-             .add(ItemTags.WOODEN_STAIRS, smeltingTime * 3 / 2)
+@@ -24,7 +_,10 @@
+     }
+ 
+     public boolean isFuel(ItemStack stack) {
+-        return this.values.containsKey(stack.getItem());
++        boolean isFuel = this.values.containsKey(stack.getItem());
++        net.craftoriya.events.IsFuelEvent event = new net.craftoriya.events.IsFuelEvent(stack.asBukkitCopy(), isFuel);
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++        return event.isFuel();
+     }
+ 
+     public SequencedSet<Item> fuelItems() {
+@@ -32,7 +_,10 @@
+     }
+ 
+     public int burnDuration(ItemStack stack) {
+-        return stack.isEmpty() ? 0 : this.values.getInt(stack.getItem());
++        int burnDuration = stack.isEmpty() ? 0 : this.values.getInt(stack.getItem());
++        net.craftoriya.events.BurnDurationEvent event = new net.craftoriya.events.BurnDurationEvent(stack.asBukkitCopy(), burnDuration);
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++        return event.getBurnDuration();
+     }
+ 
+     public static FuelValues vanillaBurnTimes(HolderLookup.Provider registries, FeatureFlagSet enabledFeatures) {
