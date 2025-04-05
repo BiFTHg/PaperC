@@ -1,14 +1,19 @@
 --- a/net/minecraft/world/level/block/NoteBlock.java
 +++ b/net/minecraft/world/level/block/NoteBlock.java
-@@ -68,8 +_,17 @@
+@@ -68,8 +_,22 @@
          }
      }
  
 +    // PaperC start
 +    @Override
-+    public void randomTick(final BlockState state, final net.minecraft.server.level.ServerLevel world, final BlockPos pos, final RandomSource random) {
-+        net.craftoriya.events.NoteBlockRandomTickEvent event = new net.craftoriya.events.NoteBlockRandomTickEvent(org.bukkit.craftbukkit.block.CraftBlock.at(world, pos));
-+        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++    protected boolean isRandomlyTicking(final BlockState state) {
++        return true;
++    }
++
++    @Override
++    public void randomTick(final BlockState state, final net.minecraft.server.level.ServerLevel level, final BlockPos pos, final RandomSource random) {
++        net.craftoriya.events.BlockRandomTickEvent randomTickEvent = new net.craftoriya.events.BlockRandomTickEvent(org.bukkit.craftbukkit.block.CraftBlock.at(level, pos));
++        level.getCraftServer().getPluginManager().callEvent(randomTickEvent);
 +    }
 +    // PaperC end
 +

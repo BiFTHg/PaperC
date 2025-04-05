@@ -3,17 +3,14 @@ package net.craftoriya.events;
 import org.bukkit.block.Block;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
+import org.bukkit.event.block.BlockEvent;
 import org.jetbrains.annotations.NotNull;
 
-public class NoteBlockRandomTickEvent extends Event {
+public class BlockRandomTickEvent extends BlockEvent {
     private static final HandlerList handlers = new HandlerList();
-    private final Block block;
 
-    public NoteBlockRandomTickEvent(Block block) {
-        this.block = block;
-    }
-    public Block getBlock() {
-        return this.block;
+    public BlockRandomTickEvent(final @NotNull Block block) {
+        super(block);
     }
 
     @Override

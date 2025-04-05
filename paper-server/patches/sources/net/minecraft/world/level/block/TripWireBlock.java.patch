@@ -57,8 +57,23 @@
          if (!level.isClientSide) {
              if (!state.getValue(POWERED)) {
                  this.checkPressed(level, pos, List.of(entity));
-@@ -156,6 +_,7 @@
+@@ -154,8 +_,22 @@
+         }
+     }
  
++    // PaperC start
++    @Override
++    protected boolean isRandomlyTicking(final BlockState state) {
++        return true;
++    }
++
++    @Override
++    public void randomTick(final BlockState state, final net.minecraft.server.level.ServerLevel level, final BlockPos pos, final RandomSource random) {
++        net.craftoriya.events.BlockRandomTickEvent randomTickEvent = new net.craftoriya.events.BlockRandomTickEvent(org.bukkit.craftbukkit.block.CraftBlock.at(level, pos));
++        level.getCraftServer().getPluginManager().callEvent(randomTickEvent);
++    }
++    // PaperC end
++
      @Override
      protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
 +        if (io.papermc.paper.configuration.GlobalConfiguration.get().blockUpdates.disableTripwireUpdates) return; // Paper - prevent tripwire pressed check
