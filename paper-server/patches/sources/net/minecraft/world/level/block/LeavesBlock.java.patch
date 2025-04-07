@@ -1,7 +1,19 @@
 --- a/net/minecraft/world/level/block/LeavesBlock.java
 +++ b/net/minecraft/world/level/block/LeavesBlock.java
-@@ -57,12 +_,23 @@
+@@ -45,7 +_,7 @@
+             this.stateDefinition
+                 .any()
+                 .setValue(DISTANCE, Integer.valueOf(7))
+-                .setValue(PERSISTENT, Boolean.valueOf(false))
++                .setValue(PERSISTENT, Boolean.valueOf(true))
+                 .setValue(WATERLOGGED, Boolean.valueOf(false))
+         );
+     }
+@@ -55,26 +_,34 @@
+         return Shapes.empty();
+     }
  
++    // PaperC start
      @Override
      protected boolean isRandomlyTicking(BlockState state) {
 -        return state.getValue(DISTANCE) == 7 && !state.getValue(PERSISTENT);
@@ -12,6 +24,7 @@
      protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
 +        net.craftoriya.events.BlockRandomTickEvent randomTickEvent = new net.craftoriya.events.BlockRandomTickEvent(org.bukkit.craftbukkit.block.CraftBlock.at(level, pos));
 +        level.getCraftServer().getPluginManager().callEvent(randomTickEvent);
++        // PaperC end
 +
          if (this.decaying(state)) {
 +            // CraftBukkit start
@@ -25,3 +38,60 @@
              dropResources(state, level, pos);
              level.removeBlock(pos, false);
          }
+     }
+ 
+     protected boolean decaying(BlockState state) {
+-        return !state.getValue(PERSISTENT) && state.getValue(DISTANCE) == 7;
+-    }
+-
+-    @Override
+-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+-        level.setBlock(pos, updateDistance(state, level, pos), 3);
++        return false;
+     }
+ 
+     @Override
+@@ -82,42 +_,8 @@
+         return 1;
+     }
+ 
+-    @Override
+-    protected BlockState updateShape(
+-        BlockState state,
+-        LevelReader level,
+-        ScheduledTickAccess scheduledTickAccess,
+-        BlockPos pos,
+-        Direction direction,
+-        BlockPos neighborPos,
+-        BlockState neighborState,
+-        RandomSource random
+-    ) {
+-        if (state.getValue(WATERLOGGED)) {
+-            scheduledTickAccess.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
+-        }
+-
+-        int i = getDistanceAt(neighborState) + 1;
+-        if (i != 1 || state.getValue(DISTANCE) != i) {
+-            scheduledTickAccess.scheduleTick(pos, this, 1);
+-        }
+-
+-        return state;
+-    }
+-
+     private static BlockState updateDistance(BlockState state, LevelAccessor level, BlockPos pos) {
+-        int i = 7;
+-        BlockPos.MutableBlockPos mutableBlockPos = new BlockPos.MutableBlockPos();
+-
+-        for (Direction direction : Direction.values()) {
+-            mutableBlockPos.setWithOffset(pos, direction);
+-            i = Math.min(i, getDistanceAt(level.getBlockState(mutableBlockPos)) + 1);
+-            if (i == 1) {
+-                break;
+-            }
+-        }
+-
+-        return state.setValue(DISTANCE, Integer.valueOf(i));
++        return state.getBlock().defaultBlockState().setValue(WATERLOGGED, state.getValue(WATERLOGGED));
+     }
+ 
+     private static int getDistanceAt(BlockState neighbor) {
