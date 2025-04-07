@@ -1,7 +1,19 @@
 --- a/net/minecraft/world/level/block/ComposterBlock.java
 +++ b/net/minecraft/world/level/block/ComposterBlock.java
-@@ -243,6 +_,11 @@
-         if (levelValue < 8 && COMPOSTABLES.containsKey(stack.getItem())) {
+@@ -240,9 +_,22 @@
+         ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult
+     ) {
+         int levelValue = state.getValue(LEVEL);
+-        if (levelValue < 8 && COMPOSTABLES.containsKey(stack.getItem())) {
++
++        // PaperC start
++        boolean isCompostable = COMPOSTABLES.containsKey(stack.getItem());
++        org.bukkit.inventory.EquipmentSlot bukkitHand = hand == InteractionHand.MAIN_HAND ? org.bukkit.inventory.EquipmentSlot.HAND : org.bukkit.inventory.EquipmentSlot.OFF_HAND;
++        net.craftoriya.events.IsCompostableEvent event = new net.craftoriya.events.IsCompostableEvent(stack.asBukkitCopy(), isCompostable, player.getBukkitEntity(), bukkitHand);
++        level.getCraftServer().getPluginManager().callEvent(event);
++        // PaperC end
++
++        if (levelValue < 8 && event.isCompostable()) { // PaperC isCompostable()
              if (levelValue < 7 && !level.isClientSide) {
                  BlockState blockState = addItem(player, state, level, pos, stack);
 +                // Paper start - handle cancelled events
@@ -12,11 +24,20 @@
                  level.levelEvent(1500, pos, state != blockState ? 1 : 0);
                  player.awardStat(Stats.ITEM_USED.get(stack.getItem()));
                  stack.consume(1, player);
-@@ -268,7 +_,19 @@
+@@ -267,8 +_,27 @@
+ 
      public static BlockState insertItem(Entity entity, BlockState state, ServerLevel level, ItemStack stack, BlockPos pos) {
          int levelValue = state.getValue(LEVEL);
-         if (levelValue < 7 && COMPOSTABLES.containsKey(stack.getItem())) {
+-        if (levelValue < 7 && COMPOSTABLES.containsKey(stack.getItem())) {
 -            BlockState blockState = addItem(entity, state, level, pos, stack);
++
++        // PaperC start
++        boolean isCompostable = COMPOSTABLES.containsKey(stack.getItem());
++        net.craftoriya.events.IsCompostableEvent event = new net.craftoriya.events.IsCompostableEvent(stack.asBukkitCopy(), isCompostable, entity.getBukkitEntity(), null);
++        level.getCraftServer().getPluginManager().callEvent(event);
++        // PaperC end
++
++        if (levelValue < 7 && event.isCompostable()) { // PaperC isCompostable()
 +            // CraftBukkit start
 +            double rand = level.getRandom().nextDouble();
 +            BlockState blockState = null; // Paper
@@ -48,7 +69,7 @@
          if (!level.isClientSide) {
              Vec3 vec3 = Vec3.atLowerCornerWithOffset(pos, 0.5, 1.01, 0.5).offsetRandom(level.random, 0.7F);
              ItemEntity itemEntity = new ItemEntity(level, vec3.x(), vec3.y(), vec3.z(), new ItemStack(Items.BONE_MEAL));
-@@ -296,14 +_,39 @@
+@@ -296,14 +_,46 @@
          return blockState;
      }
  
@@ -62,6 +83,13 @@
          int levelValue = state.getValue(LEVEL);
          float _float = COMPOSTABLES.getFloat(stack.getItem());
 -        if ((levelValue != 0 || !(_float > 0.0F)) && !(level.getRandom().nextDouble() < _float)) {
++
++        // PaperC start
++        net.craftoriya.events.CompostChanceEvent compostChanceEvent = new net.craftoriya.events.CompostChanceEvent(stack.asBukkitCopy(), _float);
++        org.bukkit.Bukkit.getPluginManager().callEvent(compostChanceEvent);
++        _float = compostChanceEvent.getCompostChance();
++        // PaperC end
++
 +        // Paper start - Add CompostItemEvent and EntityCompostItemEvent
 +        boolean willRaiseLevel = !((levelValue != 0 || _float <= 0.0F) && rand >= (double) _float);
 +        final io.papermc.paper.event.block.CompostItemEvent event;
@@ -114,6 +142,24 @@
              this.state = state;
              this.level = level;
              this.pos = pos;
+@@ -398,7 +_,16 @@
+ 
+         @Override
+         public boolean canPlaceItemThroughFace(int index, ItemStack itemStack, @Nullable Direction direction) {
+-            return !this.changed && direction == Direction.UP && ComposterBlock.COMPOSTABLES.containsKey(itemStack.getItem());
++            // PaperC start
++            boolean isCorrectDirection = !this.changed && direction == Direction.UP;
++            boolean isCompostable = ComposterBlock.COMPOSTABLES.containsKey(itemStack.getItem());
++            if (isCorrectDirection) {
++                net.craftoriya.events.IsCompostableEvent event = new net.craftoriya.events.IsCompostableEvent(itemStack.asBukkitCopy(), isCompostable, null, null);
++                org.bukkit.Bukkit.getServer().getPluginManager().callEvent(event);
++                isCompostable = event.isCompostable();
++            }
++            return isCorrectDirection && isCompostable;
++            // PaperC end
+         }
+ 
+         @Override
 @@ -412,6 +_,11 @@
              if (!item.isEmpty()) {
                  this.changed = true;
