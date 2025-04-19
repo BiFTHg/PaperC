@@ -72,6 +72,24 @@
                  FluidState fluidState = blockState.getFluidState();
                  if (this.canPassThrough(level, this.getFlowing(), pos, state, direction1, blockPos, blockState, fluidState)) {
                      if (spreadContext.isHole(blockPos)) {
+@@ -302,9 +_,16 @@
+     private boolean canMaybePassThrough(
+         BlockGetter level, BlockPos pos, BlockState state, Direction direction, BlockPos spreadPos, BlockState spreadState, FluidState fluidState
+     ) {
+-        return !this.isSourceBlockOfThisType(fluidState)
++        boolean value = !this.isSourceBlockOfThisType(fluidState)
+             && canHoldAnyFluid(spreadState)
+             && canPassThroughWall(direction, level, pos, state, spreadPos, spreadState);
++
++        LevelAccessor levelAccessor = (net.minecraft.world.level.LevelAccessor) level;
++        net.craftoriya.events.CanFluidPassThroughBlockEvent event = new net.craftoriya.events.CanFluidPassThroughBlockEvent(org.bukkit.craftbukkit.block.CraftBlock.at(levelAccessor, pos), org.bukkit.craftbukkit.block.CraftBlock.at(levelAccessor, spreadPos), value);
++        org.bukkit.Bukkit.getPluginManager().callEvent(event);
++        value = event.isSpreadable();
++
++        return value;
+     }
+ 
+     private boolean isSourceBlockOfThisType(FluidState state) {
 @@ -334,7 +_,8 @@
  
          for (Direction direction : Direction.Plane.HORIZONTAL) {
